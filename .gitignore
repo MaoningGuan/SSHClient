@@ -35,4 +35,6 @@
 build/
 
 # lib
-!lib64
+!lib64/libssh2_static.lib
+!lib64/libssh2.lib
+!lib64/libssh2.dll
