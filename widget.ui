@@ -6,14 +6,291 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>668</width>
+    <height>479</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>SSHClient</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="res.qrc">
+    <normaloff>:/icons/images/editor.ico</normaloff>:/icons/images/editor.ico</iconset>
+  </property>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>20</y>
+     <width>591</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>远程服务器信息</string>
+   </property>
+   <widget class="QLineEdit" name="lineEdit_IP">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>271</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>172.22.129.14</string>
+    </property>
+    <property name="placeholderText">
+     <string>IP地址</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_Port">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>30</y>
+      <width>291</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>22</string>
+    </property>
+    <property name="placeholderText">
+     <string>端口</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_pwd">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>60</y>
+      <width>291</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>187020</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_User">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>271</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>gmn</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QTextEdit" name="textEdit">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>190</y>
+     <width>591</width>
+     <height>211</height>
+    </rect>
+   </property>
+   <property name="acceptRichText">
+    <bool>true</bool>
+   </property>
+   <property name="placeholderText">
+    <string>输出打印...</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_src">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>120</y>
+     <width>591</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>/home/gmn/test.txt</string>
+   </property>
+   <property name="placeholderText">
+    <string>源文件路径</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_dest">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>150</y>
+     <width>591</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>C:/Users/Administrator/Downloads/test.txt</string>
+   </property>
+   <property name="placeholderText">
+    <string>目标文件路径</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>420</y>
+     <width>595</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="pushButton_clear">
+      <property name="text">
+       <string>清空</string>
+      </property>
+      <property name="icon">
+       <iconset resource="res.qrc">
+        <normaloff>:/icons/images/sync.ico</normaloff>:/icons/images/sync.ico</iconset>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_6">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>18</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_clear_2">
+      <property name="text">
+       <string>执行</string>
+      </property>
+      <property name="icon">
+       <iconset resource="res.qrc">
+        <normaloff>:/icons/images/132.bmp</normaloff>:/icons/images/132.bmp</iconset>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_5">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>18</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_download">
+      <property name="text">
+       <string>下载</string>
+      </property>
+      <property name="icon">
+       <iconset resource="res.qrc">
+        <normaloff>:/icons/images/download.ico</normaloff>:/icons/images/download.ico</iconset>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>18</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_upload">
+      <property name="text">
+       <string>上传</string>
+      </property>
+      <property name="icon">
+       <iconset resource="res.qrc">
+        <normaloff>:/icons/images/upload.ico</normaloff>:/icons/images/upload.ico</iconset>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>18</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_close">
+      <property name="text">
+       <string>退出</string>
+      </property>
+      <property name="icon">
+       <iconset resource="res.qrc">
+        <normaloff>:/icons/images/324.bmp</normaloff>:/icons/images/324.bmp</iconset>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
  </widget>
- <resources/>
- <connections/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>pushButton_close</sender>
+   <signal>clicked()</signal>
+   <receiver>Widget</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>582</x>
+     <y>414</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>333</x>
+     <y>221</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_clear</sender>
+   <signal>clicked()</signal>
+   <receiver>textEdit</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>87</x>
+     <y>414</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>335</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

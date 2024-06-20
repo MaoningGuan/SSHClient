@@ -10,11 +10,11 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    sftp_get.cpp \
+    sfp.cpp \
     widget.cpp
 
 HEADERS += \
-    sftp_get.h \
+    sfp.h \
     widget.h
 
 FORMS += \
@@ -30,3 +30,8 @@ LIBS += -lpthread libwsock32 libws2_32
 
 INCLUDEPATH += $$PWD/include
 DEPENDPATH += $$PWD/include
+
+RESOURCES += \
+    res.qrc
+
+RC_ICONS = editor.ico

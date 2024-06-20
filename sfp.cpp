@@ -3,39 +3,24 @@
  */
 
 #include <fcntl.h>
-#include <errno.h>
 #include <stdio.h>
-
-#include <ctype.h>
-
-#ifdef Q_OS_LINUX
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#else
 #include <winsock2.h>
 #include <Windows.h>
-#endif
+#include "sfp.h"
 
-#include "sftp_get.h"
-
-using namespace std;
-
-SftpGet::SftpGet()
+Sftp::Sftp()
     : m_socket(0)
     , m_sshSession(NULL)
     , m_sftpSession(NULL)
 {
 }
 
-SftpGet::~SftpGet()
+Sftp::~Sftp()
 {
+    this->Close();
 }
 
-int SftpGet::Connect(const char* host, int port, const char* username, const char* password)
+int Sftp::Connect(const char* host, int port, const char* username, const char* password)
 {
     int rc = libssh2_init(0);
     if (rc != 0)
@@ -56,11 +41,12 @@ int SftpGet::Connect(const char* host, int port, const char* username, const cha
     }
     m_socket = socket(AF_INET, SOCK_STREAM, 0);
 
+    qDebug() << QString("host:%1, port:%2").arg(host, port);
+
     sockaddr_in sin;
     sin.sin_family = AF_INET;
     sin.sin_port = htons(port);
     sin.sin_addr.s_addr = inet_addr(host);
-    qDebug() << QString("----host:%1, port:%2----").arg(host).arg(port);
     int ret = ::connect(m_socket, (struct sockaddr*)(&sin), sizeof(struct sockaddr_in));
     if (ret != 0)
     {
@@ -86,7 +72,6 @@ int SftpGet::Connect(const char* host, int port, const char* username, const cha
         return rc;
     }
 
-    // const char* fingerprint =
     libssh2_hostkey_hash(m_sshSession, LIBSSH2_HOSTKEY_HASH_SHA1);
 
     // check what authentication methods are available
@@ -98,6 +83,7 @@ int SftpGet::Connect(const char* host, int port, const char* username, const cha
     }
 
     // authenticate via password
+    qDebug() << QString("user:%1, pwd:%2").arg(username, password);
     if (libssh2_userauth_password(m_sshSession, username, password))
     {
         m_lastError = "Authentication by password failed";
@@ -114,83 +100,141 @@ int SftpGet::Connect(const char* host, int port, const char* username, const cha
     return 0;
 }
 
-int SftpGet::SFtpRead(const char* remoteFile, char* data_buf, int* data_len)
+int Sftp::Upload(const char* remoteFile, const char* localPath)
 {
     // Request a file via SFTP
-    LIBSSH2_SFTP_HANDLE* sftpHandle = libssh2_sftp_open(m_sftpSession, remoteFile, LIBSSH2_FXF_READ, 0);
+    LIBSSH2_SFTP_HANDLE* sftpHandle = libssh2_sftp_open(m_sftpSession, remoteFile,
+        LIBSSH2_FXF_WRITE|LIBSSH2_FXF_CREAT|LIBSSH2_FXF_TRUNC,
+        LIBSSH2_SFTP_S_IRUSR|LIBSSH2_SFTP_S_IWUSR| LIBSSH2_SFTP_S_IRGRP|LIBSSH2_SFTP_S_IROTH);
     if (!sftpHandle)
     {
-        m_lastError = QString("Unable to open file with SFTP: %1\n").arg(libssh2_sftp_last_error(m_sftpSession));
+        m_lastError = QString("Unable to open file with SFTP: %1").arg(libssh2_sftp_last_error(m_sftpSession));
         return -1;
     }
 
+
+    FILE *local = fopen(localPath, "rb");
+    if(!local) {
+        m_lastError = QString("Can't open local file: %1").arg(localPath);
+        return -1;
+
+    }
+
     // libssh2_sftp_open() is done, now receive data!
-    int len = 0;
+    char buf[1024] = {0};
+    size_t nread = 0;
+    char *ptr = nullptr;
+    ssize_t rc = 0;
+    int ret = 0;
     while(1)
     {
-        if (len < *data_len)
-        {
-            int sz = libssh2_sftp_read(sftpHandle, data_buf + len, *data_len - len);
-            if (sz > 0)
-            {
-                len += sz;
-            }
-            else
-            {
+        nread = fread(buf, 1, sizeof(buf), local);
+        if(nread <= 0) {
+            /* end of file */
+            break;
+        }
+
+        ptr = buf;
+        do {
+            /* write data in a loop until we block */
+            rc = libssh2_sftp_write(sftpHandle, ptr, nread);
+            if(rc <= 0) {
+                ret = -1;
+                m_lastError = QString("Write remote file %1 failed, write data ret=%2").arg(remoteFile, rc);
                 break;
             }
-        }
-        else
-        {
-            m_lastError = "The data buffer is too small for the file data";
-            return 1;
-        }
+            ptr += rc;
+            nread -= rc;
+        } while(nread);
     }
 
-    *data_len = len;
     libssh2_sftp_close(sftpHandle);
-    return 0;
+    fclose(local);
+    return ret;
 }
 
-int SftpGet::Download(const char* remoteFile, const char* localPath)
+int Sftp::Download(const char* remoteFile, const char* localPath)
 {
     // Request a file via SFTP
     LIBSSH2_SFTP_HANDLE* sftpHandle = libssh2_sftp_open(m_sftpSession, remoteFile, LIBSSH2_FXF_READ, 0);
     if (!sftpHandle)
     {
-        //snprintf(m_lastError, sizeof(m_lastError), "Unable to open file with SFTP: %ld\n",
-                 //libssh2_sftp_last_error(m_sftpSession));
+        m_lastError = QString("Unable to open file with SFTP: %1").arg(libssh2_sftp_last_error(m_sftpSession));
         return -1;
     }
 
-    // libssh2_sftp_open() is done, now receive data!
-    FILE* fp = fopen(localPath, "w");
+    FILE* fp = fopen(localPath, "wb");
     if (!fp)
     {
-        //snprintf(m_lastError, sizeof(m_lastError), "Fail to create file: %s", localPath);
+        m_lastError = QString("Fail to create file: %1").arg(localPath);
         return 2;
     }
 
-    char buf[1024];
+    char buf[1024] = {0};
+    ssize_t nread = 0;
+    char *ptr = nullptr;
+    ssize_t wc = 0;
+    int ret = 0;
     while(1)
     {
-        int sz = libssh2_sftp_read(sftpHandle, buf, sizeof(buf));
-        if (sz > 0)
-        {
-            fwrite(buf, 1, sz, fp);
-        }
-        else
-        {
+        nread = libssh2_sftp_read(sftpHandle, buf, sizeof(buf));
+        if(nread <= 0) {
+            /* end of file */
             break;
         }
+
+        ptr = buf;
+        qDebug() << QString::fromLatin1(ptr, nread);
+        do {
+            /* write data in a loop until we block */
+            wc = fwrite(ptr, 1, nread, fp);
+            if(wc <= 0) {
+                ret = -1;
+                m_lastError = QString("Write local file %1 failed, write data ret=%2").arg(localPath, wc);
+                break;
+            }
+            ptr += wc;
+            nread -= wc;
+        } while(nread);
     }
 
     fclose(fp);
     libssh2_sftp_close(sftpHandle);
+    return ret;
+}
+
+int Sftp::ExecuteCommad(const char *command)
+{
+    LIBSSH2_CHANNEL *channel = libssh2_channel_open_session(m_sshSession);
+    if (channel == NULL) {
+        m_lastError = QString("open channel session failed");
+        return 1;
+    }
+
+    int rc = libssh2_channel_exec(channel, command);
+    if (rc != 0) {
+        m_lastError = QString("Failed to execute remote command:%1").arg(command);
+        return 1;
+    }
+
+    // 读取并打印远程命令输出
+    char buffer[1024];
+    int nbytes;
+    while ((nbytes = libssh2_channel_read(channel, buffer, sizeof(buffer) - 1)) > 0) {
+        buffer[nbytes] = '\0';
+        QString output = QString(buffer);
+        qDebug() << output;
+        m_output_text = output;
+    }
+
+    // 断开连接和清理
+    libssh2_channel_close(channel);
+    libssh2_channel_free(channel);
+
     return 0;
 }
 
-void SftpGet::Close()
+void Sftp::Close()
 {
     if (m_sftpSession)
     {
@@ -207,13 +251,18 @@ void SftpGet::Close()
 
     if (m_socket)
     {
-        ::close(m_socket);
+        close(m_socket);
         m_socket = 0;
     }
     libssh2_exit();
 }
 
-QString SftpGet::GetLastError()
+QString Sftp::GetLastError()
 {
     return m_lastError;
+}
+
+QString Sftp::GetOutputText()
+{
+    return m_output_text;
 }

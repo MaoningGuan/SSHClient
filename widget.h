@@ -17,6 +17,19 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+private slots:
+    void on_pushButton_download_clicked();
+
+    int download_file();
+
+    int upload_file();
+
+    int execute_cmd();
+
+    void on_pushButton_upload_clicked();
+
+    void on_pushButton_clear_2_clicked();
+
 private:
     Ui::Widget *ui;
 };
